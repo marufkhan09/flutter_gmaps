@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gmaps/directions_model.dart';
 import 'package:flutter_gmaps/directions_repository.dart';
@@ -32,14 +33,14 @@ class _MapScreenState extends State<MapScreen> {
     zoom: 11.5,
   );
 
-  GoogleMapController _googleMapController;
-  Marker _origin;
-  Marker _destination;
-  Directions _info;
+  GoogleMapController? _googleMapController;
+  Marker? _origin;
+  Marker? _destination;
+  Directions? _info;
 
   @override
   void dispose() {
-    _googleMapController.dispose();
+    _googleMapController!.dispose();
     super.dispose();
   }
 
@@ -52,10 +53,10 @@ class _MapScreenState extends State<MapScreen> {
         actions: [
           if (_origin != null)
             TextButton(
-              onPressed: () => _googleMapController.animateCamera(
+              onPressed: () => _googleMapController!.animateCamera(
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
-                    target: _origin.position,
+                    target: _origin!.position,
                     zoom: 14.5,
                     tilt: 50.0,
                   ),
@@ -69,10 +70,10 @@ class _MapScreenState extends State<MapScreen> {
             ),
           if (_destination != null)
             TextButton(
-              onPressed: () => _googleMapController.animateCamera(
+              onPressed: () => _googleMapController!.animateCamera(
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
-                    target: _destination.position,
+                    target: _destination!.position,
                     zoom: 14.5,
                     tilt: 50.0,
                   ),
@@ -95,8 +96,8 @@ class _MapScreenState extends State<MapScreen> {
             initialCameraPosition: _initialCameraPosition,
             onMapCreated: (controller) => _googleMapController = controller,
             markers: {
-              if (_origin != null) _origin,
-              if (_destination != null) _destination
+              if (_origin != null) _origin!,
+              if (_destination != null) _destination!
             },
             polylines: {
               if (_info != null)
@@ -104,7 +105,7 @@ class _MapScreenState extends State<MapScreen> {
                   polylineId: const PolylineId('overview_polyline'),
                   color: Colors.red,
                   width: 5,
-                  points: _info.polylinePoints
+                  points: _info!.polylinePoints!
                       .map((e) => LatLng(e.latitude, e.longitude))
                       .toList(),
                 ),
@@ -131,7 +132,7 @@ class _MapScreenState extends State<MapScreen> {
                   ],
                 ),
                 child: Text(
-                  '${_info.totalDistance}, ${_info.totalDuration}',
+                  '${_info!.totalDistance}, ${_info!.totalDuration}',
                   style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.w600,
@@ -144,9 +145,9 @@ class _MapScreenState extends State<MapScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.black,
-        onPressed: () => _googleMapController.animateCamera(
+        onPressed: () => _googleMapController!.animateCamera(
           _info != null
-              ? CameraUpdate.newLatLngBounds(_info.bounds, 100.0)
+              ? CameraUpdate.newLatLngBounds(_info!.bounds!, 100.0)
               : CameraUpdate.newCameraPosition(_initialCameraPosition),
         ),
         child: const Icon(Icons.center_focus_strong),
@@ -185,8 +186,8 @@ class _MapScreenState extends State<MapScreen> {
       });
 
       // Get directions
-      final directions = await DirectionsRepository()
-          .getDirections(origin: _origin.position, destination: pos);
+      final directions = await DirectionsRepository(dio: Dio())
+          .getDirections(origin: _origin!.position, destination: pos);
       setState(() => _info = directions);
     }
   }
